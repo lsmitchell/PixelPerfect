@@ -48,6 +48,9 @@ namespace PixelPerfect
         private bool _north2;
         private bool _north3;
         private bool _direction;
+        private bool _floorLines;
+        private float _floorLineLength;
+        private float _arenaCenter;
         private Num.Vector4 _dirLineCol = new Num.Vector4(0.4f, 0.4f, 0.4f, 0.5f);
         private float _lineOffset = 0.6f;
         private float _lineLength = 1f;
@@ -110,6 +113,9 @@ namespace PixelPerfect
             _lineCol = _configuration.LineCol;
             _direction = _configuration.Direction;
             _dirLineCol = _configuration.DirectionColor;
+            _floorLines = _configuration.FloorLines;
+            _arenaCenter = _configuration.ArenaCenter;
+            _floorLineLength = _configuration.FloorLineLength;
             
             pluginInterface.UiBuilder.Draw += DrawWindow;
             pluginInterface.UiBuilder.OpenConfigUi += ConfigWindow;
@@ -271,8 +277,25 @@ namespace PixelPerfect
                     }
                 }
                 
-                
-                
+                ImGui.Checkbox("Show Floor Lines", ref _floorLines);
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip("Shows color-coded lines on the floor for cards/intercards.");
+                }
+
+                if (_floorLines) {
+                    ImGui.DragFloat("Line Length", ref _floorLineLength);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetTooltip("The length of the floor lines (25 is usually to the wall)");
+                    }
+                    ImGui.DragFloat("Arena Center", ref _arenaCenter);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetTooltip("The arena center; most are 0, some are 100");
+                    }
+                }
+
                 ImGui.Separator();
                 ImGui.Checkbox("Ring", ref _ring);
                 if (ImGui.IsItemHovered())
@@ -368,14 +391,6 @@ namespace PixelPerfect
             }
 
             if (_cs.LocalPlayer == null) return;
-            
-            if (_combat)
-            {
-                if (!_condition[ConditionFlag.InCombat])
-                {
-                    return;
-                }
-            }
 
             if (_instance)
             {
@@ -385,7 +400,15 @@ namespace PixelPerfect
                 }
                 
             }
-
+            
+            if (_combat)
+            {
+                if (!_condition[ConditionFlag.InCombat])
+                {
+                    return;
+                }
+            }
+            
             var actor = _cs.LocalPlayer;
             if (!_gui.WorldToScreen(
                 new Num.Vector3(actor.Position.X, actor.Position.Y, actor.Position.Z),
@@ -398,16 +421,112 @@ namespace PixelPerfect
                 ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoNav | ImGuiWindowFlags.NoTitleBar |
                 ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoBackground);
             ImGui.SetWindowSize(ImGui.GetIO().DisplaySize);
-            
-           if(_enabled)
-           {
-               ImGui.GetWindowDrawList().AddCircleFilled(
-                   new Num.Vector2(pos.X, pos.Y),
-                   2f,
-                   ImGui.GetColorU32(_col),
-                   100);
-           }
-           if (_circle)
+
+            if (_floorLines) {
+
+                float cardThickness = 5f;
+                float intercardThickness = 2f;
+                float cardMarkerThickness = 15f;
+                float halfCardLength = 0.2f;
+                float cardinalIndicatorDistance = 5.0f;
+
+                float opacity = 0.8f;
+                uint southColor = ImGui.GetColorU32(new Num.Vector4(0.2f, 0.6f, 0.8f, opacity));
+                uint eastColor = ImGui.GetColorU32(new Num.Vector4(0.4f, 0.7f, 0.0f, opacity));
+                uint northColor = ImGui.GetColorU32(new Num.Vector4(0.7f, 0.4f, 0.4f, opacity));
+                uint westColor = ImGui.GetColorU32(new Num.Vector4(0.5f, 0.4f, 0.7f, opacity));
+                float Ypos = 0f;
+
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter, Ypos, _arenaCenter),
+                    out Num.Vector2 floorStart);
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter + _floorLineLength, Ypos, _arenaCenter),
+                    out Num.Vector2 eastEnd);
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter - _floorLineLength, Ypos, _arenaCenter),
+                    out Num.Vector2 westEnd);
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter, Ypos, _arenaCenter + _floorLineLength),
+                    out Num.Vector2 southEnd);
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter, Ypos, _arenaCenter - _floorLineLength),
+                    out Num.Vector2 northEnd);
+
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter + _floorLineLength, Ypos, _arenaCenter - _floorLineLength),
+                    out Num.Vector2 neEnd);
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter + _floorLineLength, Ypos, _arenaCenter + _floorLineLength),
+                    out Num.Vector2 seEnd);
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter - _floorLineLength, Ypos, _arenaCenter + _floorLineLength),
+                    out Num.Vector2 swEnd);
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter - _floorLineLength, Ypos, _arenaCenter - _floorLineLength),
+                    out Num.Vector2 nwEnd);
+                
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter - halfCardLength, Ypos, _arenaCenter - cardinalIndicatorDistance),
+                    out Num.Vector2 nIndicatorStart);
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter + halfCardLength, Ypos, _arenaCenter - cardinalIndicatorDistance),
+                    out Num.Vector2 nIndicatorEnd);
+
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter - halfCardLength, Ypos, _arenaCenter + cardinalIndicatorDistance),
+                    out Num.Vector2 sIndicatorStart);
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter + halfCardLength, Ypos, _arenaCenter + cardinalIndicatorDistance),
+                    out Num.Vector2 sIndicatorEnd);
+                
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter - cardinalIndicatorDistance, Ypos, _arenaCenter + halfCardLength),
+                    out Num.Vector2 wIndicatorStart);
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter - cardinalIndicatorDistance, Ypos, _arenaCenter - halfCardLength),
+                    out Num.Vector2 wIndicatorEnd);
+                
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter + cardinalIndicatorDistance, Ypos, _arenaCenter - halfCardLength),
+                    out Num.Vector2 eIndicatorStart);
+                _gui.WorldToScreen(new Num.Vector3(_arenaCenter + cardinalIndicatorDistance, Ypos, _arenaCenter + halfCardLength),
+                    out Num.Vector2 eIndicatorEnd);
+
+                ImDrawListPtr windowDrawList = ImGui.GetWindowDrawList();
+
+                // cardinal lines
+                windowDrawList.AddLine(new Num.Vector2(floorStart.X, floorStart.Y),
+                    new Num.Vector2(eastEnd.X, eastEnd.Y),
+                    eastColor, cardThickness);
+                windowDrawList.AddLine(new Num.Vector2(floorStart.X, floorStart.Y),
+                    new Num.Vector2(westEnd.X, westEnd.Y),
+                    westColor, cardThickness);
+                windowDrawList.AddLine(new Num.Vector2(floorStart.X, floorStart.Y),
+                    new Num.Vector2(northEnd.X, northEnd.Y),
+                    northColor, cardThickness);
+                windowDrawList.AddLine(new Num.Vector2(floorStart.X, floorStart.Y),
+                    new Num.Vector2(southEnd.X, southEnd.Y),
+                    southColor, cardThickness);
+                
+                // cardinal indicators
+                windowDrawList.AddLine(new Num.Vector2(nIndicatorStart.X, nIndicatorStart.Y),
+                    new Num.Vector2(nIndicatorEnd.X, nIndicatorEnd.Y),
+                    northColor, cardMarkerThickness);
+                windowDrawList.AddLine(new Num.Vector2(sIndicatorStart.X, sIndicatorStart.Y),
+                    new Num.Vector2(sIndicatorEnd.X, sIndicatorEnd.Y),
+                    southColor, cardMarkerThickness);
+                windowDrawList.AddLine(new Num.Vector2(eIndicatorStart.X, eIndicatorStart.Y),
+                    new Num.Vector2(eIndicatorEnd.X, eIndicatorEnd.Y),
+                    eastColor, cardMarkerThickness);
+                windowDrawList.AddLine(new Num.Vector2(wIndicatorStart.X, wIndicatorStart.Y),
+                    new Num.Vector2(wIndicatorEnd.X, wIndicatorEnd.Y),
+                    westColor, cardMarkerThickness);
+
+                // intercard lines
+                windowDrawList.AddLine(new Num.Vector2(floorStart.X, floorStart.Y), new Num.Vector2(seEnd.X, seEnd.Y),
+                    eastColor, intercardThickness);
+                windowDrawList.AddLine(new Num.Vector2(floorStart.X, floorStart.Y), new Num.Vector2(nwEnd.X, nwEnd.Y),
+                    westColor, intercardThickness);
+                windowDrawList.AddLine(new Num.Vector2(floorStart.X, floorStart.Y), new Num.Vector2(neEnd.X, neEnd.Y),
+                    northColor, intercardThickness);
+                windowDrawList.AddLine(new Num.Vector2(floorStart.X, floorStart.Y), new Num.Vector2(swEnd.X, swEnd.Y),
+                    southColor, intercardThickness);
+            }
+
+            if (_enabled) {
+                ImGui.GetWindowDrawList().AddCircleFilled(
+                    new Num.Vector2(pos.X, pos.Y),
+                    2f,
+                    ImGui.GetColorU32(_col),
+                    100);
+            }
+
+            if (_circle)
             {
                 ImGui.GetWindowDrawList().AddCircle(
                     new Num.Vector2(pos.X, pos.Y),
@@ -497,7 +616,7 @@ namespace PixelPerfect
                 ImGui.GetWindowDrawList().AddLine(new Num.Vector2(lineTip.X, lineTip.Y), new Num.Vector2(lineOffset.X, lineOffset.Y),
                     ImGui.GetColorU32(_dirLineCol), 3f);
             }
-            
+
             ImGui.End();
             ImGui.PopStyleVar();
         }
@@ -557,6 +676,9 @@ namespace PixelPerfect
             _configuration.LineCol = _lineCol;
             _configuration.Direction = _direction;
             _configuration.DirectionColor = _dirLineCol;
+            _configuration.FloorLines = _floorLines;
+            _configuration.FloorLineLength = _floorLineLength;
+            _configuration.ArenaCenter = _arenaCenter;
             _pi.SavePluginConfig(_configuration);
         }
 
@@ -611,6 +733,9 @@ namespace PixelPerfect
         public Num.Vector4 ChevCol { get; set; } = new Num.Vector4(0.4f, 0.4f, 0.4f, 0.5f);
         public Num.Vector4 LineCol { get; set; } = new Num.Vector4(0.4f, 0.4f, 0.4f, 0.5f);
         public bool Direction { get; set; } = false;
+        public bool FloorLines { get; set; } = false;
+        public float FloorLineLength { get; set; } = 25.0f;
+        public float ArenaCenter { get; set; } = 100.0f;
         public Num.Vector4 DirectionColor { get; set; } = new Num.Vector4(0.4f, 0.4f, 0.4f, 0.5f);
         
     }
