@@ -49,6 +49,7 @@ namespace PixelPerfect
         private bool _north3;
         private bool _direction;
         private bool _floorLines;
+        private bool _floorBlips;
         private float _floorLineLength;
         private float _arenaCenter;
         private Num.Vector4 _dirLineCol = new Num.Vector4(0.4f, 0.4f, 0.4f, 0.5f);
@@ -116,6 +117,7 @@ namespace PixelPerfect
             _floorLines = _configuration.FloorLines;
             _arenaCenter = _configuration.ArenaCenter;
             _floorLineLength = _configuration.FloorLineLength;
+            _floorBlips = _configuration.FloorBlips;
             
             pluginInterface.UiBuilder.Draw += DrawWindow;
             pluginInterface.UiBuilder.OpenConfigUi += ConfigWindow;
@@ -293,6 +295,11 @@ namespace PixelPerfect
                     if (ImGui.IsItemHovered())
                     {
                         ImGui.SetTooltip("The arena center; most are 0, some are 100");
+                    }
+                    ImGui.Checkbox("Cardinal Blips", ref _floorBlips);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetTooltip("Shows small squares on the cardinal floor lines.");
                     }
                 }
 
@@ -494,18 +501,20 @@ namespace PixelPerfect
                     southColor, cardThickness);
                 
                 // cardinal indicators
-                windowDrawList.AddLine(new Num.Vector2(nIndicatorStart.X, nIndicatorStart.Y),
-                    new Num.Vector2(nIndicatorEnd.X, nIndicatorEnd.Y),
-                    northColor, cardMarkerThickness);
-                windowDrawList.AddLine(new Num.Vector2(sIndicatorStart.X, sIndicatorStart.Y),
-                    new Num.Vector2(sIndicatorEnd.X, sIndicatorEnd.Y),
-                    southColor, cardMarkerThickness);
-                windowDrawList.AddLine(new Num.Vector2(eIndicatorStart.X, eIndicatorStart.Y),
-                    new Num.Vector2(eIndicatorEnd.X, eIndicatorEnd.Y),
-                    eastColor, cardMarkerThickness);
-                windowDrawList.AddLine(new Num.Vector2(wIndicatorStart.X, wIndicatorStart.Y),
-                    new Num.Vector2(wIndicatorEnd.X, wIndicatorEnd.Y),
-                    westColor, cardMarkerThickness);
+                if (_floorBlips) {
+                    windowDrawList.AddLine(new Num.Vector2(nIndicatorStart.X, nIndicatorStart.Y),
+                        new Num.Vector2(nIndicatorEnd.X, nIndicatorEnd.Y),
+                        northColor, cardMarkerThickness);
+                    windowDrawList.AddLine(new Num.Vector2(sIndicatorStart.X, sIndicatorStart.Y),
+                        new Num.Vector2(sIndicatorEnd.X, sIndicatorEnd.Y),
+                        southColor, cardMarkerThickness);
+                    windowDrawList.AddLine(new Num.Vector2(eIndicatorStart.X, eIndicatorStart.Y),
+                        new Num.Vector2(eIndicatorEnd.X, eIndicatorEnd.Y),
+                        eastColor, cardMarkerThickness);
+                    windowDrawList.AddLine(new Num.Vector2(wIndicatorStart.X, wIndicatorStart.Y),
+                        new Num.Vector2(wIndicatorEnd.X, wIndicatorEnd.Y),
+                        westColor, cardMarkerThickness);
+                }
 
                 // intercard lines
                 windowDrawList.AddLine(new Num.Vector2(floorStart.X, floorStart.Y), new Num.Vector2(seEnd.X, seEnd.Y),
@@ -679,6 +688,7 @@ namespace PixelPerfect
             _configuration.FloorLines = _floorLines;
             _configuration.FloorLineLength = _floorLineLength;
             _configuration.ArenaCenter = _arenaCenter;
+            _configuration.FloorBlips = _floorBlips;
             _pi.SavePluginConfig(_configuration);
         }
 
@@ -734,6 +744,7 @@ namespace PixelPerfect
         public Num.Vector4 LineCol { get; set; } = new Num.Vector4(0.4f, 0.4f, 0.4f, 0.5f);
         public bool Direction { get; set; } = false;
         public bool FloorLines { get; set; } = false;
+        public bool FloorBlips { get; set; } = false;
         public float FloorLineLength { get; set; } = 25.0f;
         public float ArenaCenter { get; set; } = 100.0f;
         public Num.Vector4 DirectionColor { get; set; } = new Num.Vector4(0.4f, 0.4f, 0.4f, 0.5f);

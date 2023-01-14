@@ -1,9 +1,9 @@
 ﻿{
   "Author": "Haplo064",
-  "Name": "Pixel Perfect",
+  "Name": "Pixel Perfect 2",
   "Punchline": "Reveals your hitbox, with customisable features.",
-  "InternalName": "PixelPerfect",
-  "Description": "Showing exactly where to stand since 2020.",
+  "InternalName": "PixelPerfect2",
+  "Description": "Showing exactly where to stand since 2022.",
   "Tags": ["Hitbox", "Overlay", "Indicator"],
   "RepoUrl": "https://github.com/Haplo064/PixelPerfect",
   "ApplicableVersion": "any",
