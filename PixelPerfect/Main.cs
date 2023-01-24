@@ -50,8 +50,13 @@ namespace PixelPerfect
         private bool _update = false;
         private bool _bitch = false;
         private int _version = 4;
+        
+        private bool _floorLines = false;
+        private bool _floorBlips = false;
+        private float _floorLineLength = 25f;
+        private float _arenaCenter = 100f;
 
-        private string exported = "Nothing";
+        //private string exported = "Nothing";
 
         public PixelPerfect(
             DalamudPluginInterface pluginInterface,
@@ -72,6 +77,10 @@ namespace PixelPerfect
             _configuration = pluginInterface.GetPluginConfig() as Config ?? new Config();
             
             _bitch= _configuration.Bitch;
+            _floorLines = _configuration.FloorLines;
+            _arenaCenter = _configuration.ArenaCenter;
+            _floorLineLength = _configuration.FloorLineLength;
+            _floorBlips = _configuration.FloorBlips;
 
             doodleBag = _configuration.DoodleBag;
             if(doodleBag.Count==0 ) { _firstTime = true; }
@@ -183,6 +192,10 @@ namespace PixelPerfect
         {
             _configuration.DoodleBag = doodleBag;
             _configuration.Bitch = _bitch;
+            _configuration.FloorLines = _floorLines;
+            _configuration.FloorLineLength = _floorLineLength;
+            _configuration.ArenaCenter = _arenaCenter;
+            _configuration.FloorBlips = _floorBlips;
             _pi.SavePluginConfig(_configuration);
         }
 
@@ -252,6 +265,10 @@ namespace PixelPerfect
         public int Version { get; set; } = 4;
         public bool Bitch { get; set; } = false;
         public List<Drawing> DoodleBag { get; set; } = new List<Drawing>();
+        public bool FloorLines { get; set; } = false;
+        public bool FloorBlips { get; set; } = false;
+        public float FloorLineLength { get; set; } = 25.0f;
+        public float ArenaCenter { get; set; } = 100.0f;
     }
 
     public enum JobIds : uint

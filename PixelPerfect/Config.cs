@@ -51,6 +51,30 @@ namespace PixelPerfect
                     ImGui.Checkbox("Hide Updates", ref _bitch);
                     if (ImGui.IsItemHovered()) { ImGui.SetTooltip("Never show any messages."); }
                     ImGui.Separator();
+                    ImGui.Checkbox("Show Floor Lines", ref _floorLines);
+                    if (ImGui.IsItemHovered())
+                    {
+                        ImGui.SetTooltip("Shows color-coded lines on the floor for cards/intercards.");
+                    }
+
+                    if (_floorLines) {
+                        ImGui.DragFloat("Line Length", ref _floorLineLength);
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.SetTooltip("The length of the floor lines (25 is usually to the wall)");
+                        }
+                        ImGui.DragFloat("Arena Center", ref _arenaCenter);
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.SetTooltip("The arena center; most are 0, some are 100");
+                        }
+                        ImGui.Checkbox("Cardinal Blips", ref _floorBlips);
+                        if (ImGui.IsItemHovered())
+                        {
+                            ImGui.SetTooltip("Shows small squares on the cardinal floor lines.");
+                        }
+                    }
+                    ImGui.Separator();
                     foreach (var doodle in doodleBag)
                     {
                         var enabled = doodle.Enabled;
@@ -79,7 +103,7 @@ namespace PixelPerfect
                                 moveNum = number2;
                                 moveUp = true;
                             }
-                             ImGui.SameLine();
+                            ImGui.SameLine();
                         }
                         if (number2 + 1 < doodleBag.Count)
                         {
