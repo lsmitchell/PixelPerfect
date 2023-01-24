@@ -5,7 +5,7 @@
   "AssemblyVersion": "3.0.2.0",
   "Description": "Showing exactly where to stand since 2020.",
   "ApplicableVersion": "any",
-  "RepoUrl": "https://github.com/Haplo064/PixelPerfect",
+  "RepoUrl": "https://github.com/lsmitchell/PixelPerfect",
   "Tags": [
     "Hitbox",
     "Overlay",
